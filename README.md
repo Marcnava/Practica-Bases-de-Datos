@@ -37,7 +37,7 @@
 1. Realizar un modelo entidad-relación de una fictícia flota de coches en la empresa KeepCoding.
 ![Captura](https://github.com/Marcnava/Practica-Bases-de-Datos/blob/main/Captura%20de%20pantalla%202023-09-18%20a%20las%201.12.43.png)
 
-2. En base al modelo entidad-relación, crear un script con PostgreSQL que al ejecutarse generase un esquema, tablas con sus relaciones (PK, FK) y consultas mezclando tablas y mostrando los datos requeridos en el ejercicio en columnas personalizadas.
+2. En base al modelo entidad-relación, crear un script con PostgreSQL que al ejecutarse genere un esquema, tablas con sus relaciones (PK, FK) y consultas mezclando tablas y mostrando los datos requeridos en el ejercicio en columnas personalizadas.
 
 ---
 ### Agradecimientos
