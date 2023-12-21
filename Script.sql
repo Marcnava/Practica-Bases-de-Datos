@@ -4,38 +4,63 @@ create schema keepcoding;
 -- Creación de tablas
 create table keepcoding.coches (
 	matricula varchar(50) primary key,
-	marca varchar(50) null,
-	modelo varchar(50) null,
+	nombre_modelo varchar(50) null,
 	fecha_compra date null,
-	color varchar(50) null,
+	nombre_color varchar(50) null,
 	kms_totales int4 null
 );
 
+create table keepcoding.modelos (
+	nombre varchar(50) primary key,
+	nombre_marca varchar(50) null
+);
+
 create table keepcoding.marcas (
-	marca varchar(50) primary key,
-	grupo varchar(50) null
+	nombre varchar(50) primary key,
+	nombre_grupo varchar(50) null
+);
+
+create table keepcoding.grupos (
+	nombre varchar(50) primary key
 );
 
 create table keepcoding.seguros (
 	numero_poliza int4 primary key,
-	aseguradora varchar(50) null,
+	nombre_aseguradora varchar(50) null,
 	fecha_alta_seguro date null,
 	matricula varchar(50) null
+);
+
+create table keepcoding.aseguradoras (
+	nombre varchar(50) primary key
 );
 
 create table keepcoding.revisiones (
 	id serial primary key,
 	importe_revision float4 null,
-	moneda varchar null,
+	nombre_moneda varchar null,
 	kms_revision int4 null,
 	fecha_revision date null,
 	matricula varchar(50) null
 );
 
+create table keepcoding.monedas (
+	nombre varchar(50) primary key
+);
+
+create table keepcoding.colores (
+	nombre varchar(50) primary key
+);
+
 -- Creación de relaciones
-alter table keepcoding.coches add constraint fk_coches_marcas foreign key (marca) references keepcoding.marcas(marca);
+alter table keepcoding.coches add constraint fk_coches_modelos foreign key (nombre_modelo) references keepcoding.modelos(nombre);
+alter table keepcoding.modelos add constraint fk_modelos_marcas foreign key (nombre_marca) references keepcoding.marcas(nombre);
+alter table keepcoding.marcas add constraint fk_marcas_grupos foreign key (nombre_grupo) references keepcoding.grupos(nombre);
+alter table keepcoding.coches add constraint fk_coches_colores foreign key (nombre_color) references keepcoding.colores(nombre);
 alter table keepcoding.seguros add constraint fk_coches_seguros foreign key (matricula) references keepcoding.coches(matricula);
+alter table keepcoding.seguros add constraint fk_seguros_aseguradoras foreign key (nombre_aseguradora) references keepcoding.aseguradoras(nombre);
 alter table keepcoding.revisiones add constraint fk_coches_revisiones foreign key (matricula) references keepcoding.coches(matricula);
+alter table keepcoding.revisiones add constraint fk_revisiones_monedas foreign key (nombre_moneda) references keepcoding.monedas(nombre);
 
 -- Creación de tabla auxiliar
 create table keepcoding.coches_auxiliar (
@@ -216,22 +241,47 @@ insert into keepcoding.coches_auxiliar (matricula,grupo,marca,modelo,fecha_compr
 	 ('5572DHP','Hyundai Motor Group','Kia','Rio','2007-06-06','Blanco','Axa',75790,'2007-06-06',186.0,'Dólar',22437,'2014-05-29',42143);
 
 -- Traspaso de datos de tabla auxiliar a las demás tablas
-insert into keepcoding.marcas (marca, grupo)
+insert into keepcoding.grupos (nombre)
+select ca.grupo
+from keepcoding.coches_auxiliar ca
+group by ca.grupo;
+
+insert into keepcoding.marcas (nombre, nombre_grupo)
 select ca.marca, ca.grupo
 from keepcoding.coches_auxiliar ca
 group by ca.marca, ca.grupo;
 
-insert into keepcoding.coches (matricula, marca, modelo, fecha_compra, color, kms_totales)
-select ca.matricula, ca.marca, ca.modelo, ca.fecha_compra, ca.color, ca.kms_totales
+insert into keepcoding.modelos (nombre, nombre_marca)
+select ca.modelo, ca.marca
 from keepcoding.coches_auxiliar ca
-group by ca.matricula, ca.marca, ca.modelo, ca.fecha_compra, ca.color, ca.kms_totales;
+group by ca.modelo, ca.marca;
 
-insert into keepcoding.seguros (numero_poliza, aseguradora, fecha_alta_seguro, matricula)
+insert into keepcoding.colores (nombre)
+select ca.color
+from keepcoding.coches_auxiliar ca
+group by ca.color;
+
+insert into keepcoding.coches (matricula, nombre_modelo, fecha_compra, nombre_color, kms_totales)
+select ca.matricula, ca.modelo, ca.fecha_compra, ca.color, ca.kms_totales
+from keepcoding.coches_auxiliar ca
+group by ca.matricula, ca.modelo, ca.fecha_compra, ca.color, ca.kms_totales;
+
+insert into keepcoding.aseguradoras (nombre)
+select ca.aseguradora
+from keepcoding.coches_auxiliar ca
+group by ca.aseguradora;
+
+insert into keepcoding.seguros (numero_poliza, nombre_aseguradora, fecha_alta_seguro, matricula)
 select ca.n_poliza, ca.aseguradora, ca.fecha_alta_seguro, ca.matricula
 from keepcoding.coches_auxiliar ca
 group by ca.n_poliza, ca.aseguradora, ca.fecha_alta_seguro, ca.matricula;
 
-insert into keepcoding.revisiones (importe_revision, moneda, kms_revision, fecha_revision, matricula)
+insert into keepcoding.monedas (nombre)
+select ca.moneda
+from keepcoding.coches_auxiliar ca
+group by ca.moneda;
+
+insert into keepcoding.revisiones (importe_revision, nombre_moneda, kms_revision, fecha_revision, matricula)
 select ca.importe_revision, ca.moneda, ca.kms_revision, ca.fecha_revision, ca.matricula
 from keepcoding.coches_auxiliar ca
 group by ca.importe_revision, ca.moneda, ca.kms_revision, ca.fecha_revision, ca.matricula;
@@ -241,16 +291,17 @@ drop table keepcoding.coches_auxiliar;
 
 -- Consulta para sacar los coches activos (fecha del seguro en los 10 últimos años)
 select 
-    c.modelo as "Modelo", 
-    c.marca as "Marca", 
-    m.grupo as "Grupo",
+    c.nombre_modelo as "Modelo", 
+    mo.nombre_marca as "Marca", 
+    m.nombre_grupo as "Grupo",
     c.fecha_compra as "Fecha de compra",
     c.matricula as "Matrícula",
-    c.color as "Color",
+    c.nombre_color as "Color",
     c.kms_totales as "Total de kilómetros",
-    s.aseguradora as "Aseguradora",
+    s.nombre_aseguradora as "Aseguradora",
     s.numero_poliza as "Numero de póliza"
 from keepcoding.coches c
-join keepcoding.marcas m on c.marca = m.marca
+join keepcoding.modelos mo on c.nombre_modelo = mo.nombre
+join keepcoding.marcas m on mo.nombre_marca = m.nombre
 join keepcoding.seguros s on c.matricula = s.matricula
 where s.fecha_alta_seguro > '2012-09-17'
