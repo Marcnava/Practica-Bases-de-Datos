@@ -14,6 +14,7 @@
 ---
 ### Tecnologías utilizadas
 ![Static Badge](https://img.shields.io/badge/PostgreSQL-%230064a5?style=for-the-badge&logo=postgresql&logoColor=white)
+![Static Badge](https://img.shields.io/badge/dbeaver-a0836f?style=for-the-badge&logo=dbeaver&logoColor=white)
 
 ---
 ### Qué he aprendido
